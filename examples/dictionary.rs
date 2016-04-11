@@ -16,9 +16,9 @@ fn main() {
 
     let expected_false_positive_rate = 0.1;
 
-    let size_of_bloom_filter = 100_000;
+    let expected_number_items = 100_000;
 
-    let mut dict_bloom = BloomFilter::new_with_params(size_of_bloom_filter, expected_false_positive_rate);
+    let mut dict_bloom = BloomFilter::new_with_params(expected_number_items, expected_false_positive_rate);
     
     let words_iter = words.iter();
     
