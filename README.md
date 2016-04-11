@@ -1,5 +1,7 @@
 # MultiBloom
-A collection of Bloom filter data structures
+A collection of Bloom filter data structures.
+
+Currently a Work In Progress.
 
 ## License
 
