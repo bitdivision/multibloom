@@ -1,0 +1,19 @@
+[package]
+name = "multibloom"
+version = "0.1.0"
+authors = ["Richard Fortescue-Webb <richard@rfwebb.com>"]
+license = "MIT OR Apache-2.0"
+
+description = "A collection of libraries including a number of different types of bloom filters"
+
+documentation = ""
+homepage = ""
+repository = ""
+
+readme = "README.md"
+
+keywords = ["bloom", "bloom filter", "scaleable bloom"]
+
+
+[dependencies]
+bit-vec = "0.4.3"
