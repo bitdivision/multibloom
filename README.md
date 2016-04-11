@@ -1,3 +1,5 @@
+[![Clippy Linting Result](https://clippy.bashy.io/github/bitdivision/multibloom/master/badge.svg)](https://clippy.bashy.io/github/bitdivision/multibloom/master/log)
+
 # MultiBloom
 A collection of Bloom filter data structures.
 
