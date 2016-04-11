@@ -1,9 +1,21 @@
 [![Build Status](https://travis-ci.org/bitdivision/multibloom.svg?branch=master)](https://travis-ci.org/bitdivision/multibloom)[![Clippy Linting Result](https://clippy.bashy.io/github/bitdivision/multibloom/master/badge.svg)](https://clippy.bashy.io/github/bitdivision/multibloom/master/log)
 
 # MultiBloom
+
 A collection of Bloom filter data structures.
 
 Currently a Work In Progress.
+
+[Crate](https://crates.io/crates/multibloom)
+
+[Documentation]()
+
+Variants:
+
+ - [x] Basic Bloom filter (Using SipHash)
+ - [ ] Scaleable Bloom filter ([reference](http://gsd.di.uminho.pt/members/cbm/ps/dbloom.pdf))
+ - [ ] Partitioned Bloom filter ([reference](http://gsd.di.uminho.pt/members/cbm/ps/dbloom.pdf))
+ - [ ] Counting Bloom filter
 
 ## License
 
