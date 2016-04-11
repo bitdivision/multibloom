@@ -12,7 +12,7 @@ repository = "https://github.com/bitdivision/multibloom"
 
 readme = "README.md"
 
-keywords = ["bloom", "bloom filter", "scaleable bloom"]
+keywords = ["bloom", "filter", "scaleable"]
 
 
 [dependencies]
