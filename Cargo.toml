@@ -6,9 +6,9 @@ license = "MIT OR Apache-2.0"
 
 description = "A collection of libraries including a number of different types of bloom filters"
 
-documentation = ""
-homepage = ""
-repository = ""
+# documentation = ""
+# homepage = ""
+repository = "https://github.com/bitdivision/multibloom"
 
 readme = "README.md"
 
