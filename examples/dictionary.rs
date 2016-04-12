@@ -27,18 +27,18 @@ fn main() {
 
     let new_words = words_iter.clone().take(no_to_add);
     for new_word in new_words {
-        dict_bloom.add(new_word);
+        dict_bloom.add(&new_word);
     }
 
     let mut false_positives = 0;
 
     let check_words = words_iter.skip(no_to_add).take(no_to_check);
     for check_word in check_words {
-        if dict_bloom.query(check_word) {
+        if dict_bloom.query(&check_word) {
             false_positives += 1;
         }
     }
 
     println!("Bloom filter: {:?}", dict_bloom);
-    println!("Found {:?}% false positives. Expected {:?}", false_positives as f32 * 100.0 / no_to_check as f32, expected_false_positive_rate);
+    println!("Found {:?}% false positives. Expected {:?}%", false_positives as f32 * 100.0 / no_to_check as f32, expected_false_positive_rate * 100.0);
 }

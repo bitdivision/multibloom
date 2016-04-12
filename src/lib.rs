@@ -81,7 +81,7 @@ impl BloomFilter {
     }
 
     /// Add a Hashable type to the bloom filter.
-    pub fn add<T: Hash>(&mut self, val: T) {
+    pub fn add<T: Hash>(&mut self, val: &T) {
         // Generate two random u64s for each hash and seed SipHaser with that.
         for n in 0..self.hash_count {
             let seed = n as u64;
@@ -94,7 +94,7 @@ impl BloomFilter {
     }
     
     /// Query the bloom filter for some Hashable value.
-    pub fn query<T: Hash>(&self, query_val: T) -> bool{
+    pub fn query<T: Hash>(&self, query_val: &T) -> bool{
         for n in 0..self.hash_count {
             let seed = n as u64;
             let hashed = self.bloom_hash(seed, &query_val);
