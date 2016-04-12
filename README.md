@@ -1,12 +1,10 @@
-[![Build Status](https://travis-ci.org/bitdivision/multibloom.svg?branch=master)](https://travis-ci.org/bitdivision/multibloom)[![Clippy Linting Result](https://clippy.bashy.io/github/bitdivision/multibloom/master/badge.svg)](https://clippy.bashy.io/github/bitdivision/multibloom/master/log)
+[![Build Status](https://travis-ci.org/bitdivision/multibloom.svg?branch=master)](https://travis-ci.org/bitdivision/multibloom)[![Clippy Linting Result](https://clippy.bashy.io/github/bitdivision/multibloom/master/badge.svg)](https://clippy.bashy.io/github/bitdivision/multibloom/master/log)[![Crate Version](https://img.shields.io/crates/v/multibloom.svg)]
 
 # MultiBloom
 
 A collection of Bloom filter data structures.
 
 Currently a Work In Progress.
-
-[Crate](https://crates.io/crates/multibloom)
 
 [Documentation]()
 
