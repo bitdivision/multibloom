@@ -9,7 +9,7 @@
  * allow random initialization of seed values? All BuildHasher implementations should
  * have a Hasher available.
  *
- * Derive Clone
+ * Derive Clone? This seems to throw up an error in rustc.
  *
  * Write some tests
  *
@@ -34,8 +34,8 @@ use std::hash::{Hash, SipHasher, Hasher, BuildHasher};
 use std::fmt;
 
 pub struct BloomFilter<H: BuildHasher> {
-    size: usize,
-    hash_count: usize,
+    size: u64,
+    hash_count: u64,
     bloom: BitVec,
     hashers: [H::Hasher; 2]
 }
@@ -78,7 +78,7 @@ impl BloomFilter<SipBuilder> {
     ///
     /// `size`: The size of the bit vector being stored. (m)
     /// `hash_count`: The number of hash functions to use. (k)
-    pub fn new(size: usize, hash_count: usize) -> BloomFilter<SipBuilder> {
+    pub fn new(size: u64, hash_count: u64) -> BloomFilter<SipBuilder> {
         BloomFilter::new_with_hasher(SipBuilder::new(), size, hash_count)
     }
 
@@ -87,8 +87,8 @@ impl BloomFilter<SipBuilder> {
     /// `n`: The number of items that are going to be stored in the bloom filter.
     /// `p`: The allowable error rate of false positives
     pub fn new_with_params(n: usize, p: f32) -> BloomFilter<SipBuilder> {
-        let m = ((-(n as f32 * (p.ln()))).ceil() / ((2.0f32).ln().powi(2))) as usize;
-        let k = (((2.0f32).ln() * (m as f32/ n as f32)).round()) as usize;
+        let m = ((-(n as f32 * (p.ln()))).ceil() / ((2.0f32).ln().powi(2))) as u64;
+        let k = (((2.0f32).ln() * (m as f32/ n as f32)).round()) as u64;
         
         BloomFilter::new_with_hasher(SipBuilder::new(), m, k)
     }
@@ -96,11 +96,11 @@ impl BloomFilter<SipBuilder> {
 
 impl<H> BloomFilter<H> where H: BuildHasher, H::Hasher: Clone {
 
-    pub fn new_with_hasher(hash_builder: H, size: usize, hash_count: usize) -> BloomFilter<H> {
+    pub fn new_with_hasher(hash_builder: H, size: u64, hash_count: u64) -> BloomFilter<H> {
         BloomFilter {
             size: size,
             hash_count: hash_count,
-            bloom: BitVec::from_elem(size, false),
+            bloom: BitVec::from_elem(size as usize, false),
             hashers: [hash_builder.build_hasher(), hash_builder.build_hasher()]
         }
     }
@@ -118,8 +118,7 @@ impl<H> BloomFilter<H> where H: BuildHasher, H::Hasher: Clone {
     /// Query the bloom filter for some Hashable value.
     pub fn query<T: Hash>(&self, query_val: &T) -> bool{
         for n in 0..self.hash_count {
-            let seed = n as u64;
-            let hashed = self.bloom_hash(seed, &query_val);
+            let hashed = self.bloom_hash(n as u64, &query_val);
             if !self.bloom.get(hashed).unwrap() {
                 return false;
             }
@@ -129,14 +128,14 @@ impl<H> BloomFilter<H> where H: BuildHasher, H::Hasher: Clone {
     
     // Uses Hash[i] = (hash_64_part_0 * hash_64_part_1 + i) as per 
     // http://spyced.blogspot.com/2009/01/all-you-ever-wanted-to-know-about.html
-    fn bloom_hash<T: Hash>(&self, seed: u64, val: &T) -> usize {
+    fn bloom_hash<T: Hash>(&self, n: u64, val: &T) -> usize {
         let mut sip1 = self.hashers[0].clone();
         let mut sip2 = self.hashers[1].clone();
         val.hash(&mut sip1);
         val.hash(&mut sip2);
         let fin1 = sip1.finish();
         let fin2 = sip2.finish();
-        (fin1.wrapping_mul(fin2.wrapping_add(seed)) % (self.size as u64)) as usize
+        (fin1.wrapping_mul(fin2.wrapping_add(n)) % (self.size as u64)) as usize
     }
     
     /// Returns the number of bits set in the bloom filter.
