@@ -4,6 +4,8 @@
  * something goes very very wrong. Probably better to error though since this is a 
  * library.
  *
+ * Derive Clone
+ *
  * Write some tests
  *
  * Add scaleable bloom filter
@@ -21,31 +23,52 @@
  ********************************************************************************/ 
 
 /// BloomFilter is a fast, tested and benchmarked bloom filter library.
-///
-/// It is designed to be as general and extensible as possible.
 
 extern crate bit_vec;
 
 use bit_vec::BitVec;
-use std::hash::{Hash, SipHasher, Hasher};
+use std::hash::{Hash, SipHasher, Hasher, BuildHasher};
 use std::fmt;
 
-
-pub struct BloomFilter {
+pub struct BloomFilter<H: BuildHasher> {
     size: usize,
     hash_count: usize,
     bloom: BitVec,
     bits_full: usize,
-    hashers: [SipHasher; 2]
+    hashers: [H::Hasher; 2]
 }
 
-impl fmt::Debug for BloomFilter {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "BloomFilter: size: {:?}, hash_count: {:?}, bits_full: {:?}, fill ratio: {:?}", self.size, self.hash_count, self.bits_full, self.bits_full as f32/self.size as f32)
+#[derive(Clone)]
+pub struct SipBuilder {
+    k0: u64,
+    k1: u64,
+}
+
+impl SipBuilder {
+    pub fn new() -> SipBuilder{
+        SipBuilder { k0: 0, k1: 0 }
     }
 }
 
-impl BloomFilter {
+impl BuildHasher for SipBuilder{
+    type Hasher = SipHasher;
+
+    #[inline]
+    fn build_hasher(&self) -> SipHasher {
+        SipHasher::new_with_keys(self.k0, self.k1)
+    }
+}
+
+impl<H> fmt::Debug for BloomFilter<H> where H: BuildHasher{
+
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "BloomFilter: size: {:?}, hash_count: {:?}, bits_full: {:?}, fill ratio: {:?}",
+               self.size, self.hash_count, self.bits_full, self.bits_full as f32/self.size as f32)
+    }
+}
+
+impl BloomFilter<SipBuilder> {
+
     /// Constructs a new `BloomFilter`
     ///
     /// Takes `size` and `hash_count`. These correspond to m and k in standard Bloom Filter
@@ -53,30 +76,31 @@ impl BloomFilter {
     ///
     /// `size`: The size of the bit vector being stored. (m)
     /// `hash_count`: The number of hash functions to use. (k)
-    pub fn new(size: usize, hash_count: usize) -> BloomFilter {
-        BloomFilter {
-            size: size,
-            hash_count: hash_count,
-            bloom: BitVec::from_elem(size, false),
-            bits_full: 0,
-            hashers: [SipHasher::new(), SipHasher::new()]
-        }
+    pub fn new(size: usize, hash_count: usize) -> BloomFilter<SipBuilder> {
+        BloomFilter::new_with_hasher(SipBuilder::new(), size, hash_count)
     }
 
     /// Constructs a new `BloomFilter` using desired error rate and number of items 
     ///
     /// `n`: The number of items that are going to be stored in the bloom filter.
     /// `p`: The allowable error rate of false positives
-    pub fn new_with_params(n: usize, p: f32) -> BloomFilter {
+    pub fn new_with_params(n: usize, p: f32) -> BloomFilter<SipBuilder> {
         let m = ((-(n as f32 * (p.ln()))).ceil() / ((2.0f32).ln().powi(2))) as usize;
         let k = (((2.0f32).ln() * (m as f32/ n as f32)).round()) as usize;
+        
+        BloomFilter::new_with_hasher(SipBuilder::new(), m, k)
+    }
+}
 
+impl<H> BloomFilter<H> where H: BuildHasher, H::Hasher: Clone {
+
+    pub fn new_with_hasher(hash_builder: H, size: usize, hash_count: usize) -> BloomFilter<H> {
         BloomFilter {
-            size: m,
-            hash_count: k,
-            bloom: BitVec::from_elem(m, false),
+            size: size,
+            hash_count: hash_count,
+            bloom: BitVec::from_elem(size, false),
             bits_full: 0,
-            hashers: [SipHasher::new(), SipHasher::new()]
+            hashers: [hash_builder.build_hasher(), hash_builder.build_hasher()]
         }
     }
 
@@ -86,9 +110,6 @@ impl BloomFilter {
         for n in 0..self.hash_count {
             let seed = n as u64;
             let hashed = self.bloom_hash(seed, &val);
-            if !self.bloom.get(hashed).unwrap() {
-                self.bits_full += 1;
-            }
             self.bloom.set(hashed, true);
         }
     }
@@ -107,9 +128,6 @@ impl BloomFilter {
     
     // Uses Hash[i] = (hash_64_part_0 * hash_64_part_1 + i) as per 
     // http://spyced.blogspot.com/2009/01/all-you-ever-wanted-to-know-about.html
-    // SipHash seems like it should be reasonable for bloom applications
-    // TODO: It would probably be good to make this generic over a hash function
-    // in the same way as hash map.
     fn bloom_hash<T: Hash>(&self, seed: u64, val: &T) -> usize {
         let mut sip1 = self.hashers[0].clone();
         let mut sip2 = self.hashers[1].clone();

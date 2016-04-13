@@ -5,6 +5,7 @@ use multibloom::BloomFilter;
 use std::fs::File;
 use std::path::Path;
 use std::io::Read;
+use std::hash::{SipHasher};
 
 fn main() {
     let path = Path::new("/usr/share/dict/words");
