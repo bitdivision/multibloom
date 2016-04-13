@@ -4,6 +4,11 @@
  * something goes very very wrong. Probably better to error though since this is a 
  * library.
  *
+ * Should this be generic over Hasher rather than BuildHasher? BuildHasher keeps it
+ * consistent with HashMap but it seems the only reason to have BuildHasher is to 
+ * allow random initialization of seed values? All BuildHasher implementations should
+ * have a Hasher available.
+ *
  * Derive Clone
  *
  * Write some tests
@@ -14,8 +19,6 @@
  *
  * Publish on crates.io
  *
- * Make Generic over hash functions? (must be 128 bit? or maybe add one for 64 bit)
- * Test with twox-hash crate instead of SIP. May be better.
  *
  * A good Benchmark / Test suite which shows false positive rate / memory usage / time
  * over a bunch of scenarios
@@ -34,7 +37,6 @@ pub struct BloomFilter<H: BuildHasher> {
     size: usize,
     hash_count: usize,
     bloom: BitVec,
-    bits_full: usize,
     hashers: [H::Hasher; 2]
 }
 
@@ -59,11 +61,11 @@ impl BuildHasher for SipBuilder{
     }
 }
 
-impl<H> fmt::Debug for BloomFilter<H> where H: BuildHasher{
+impl<H> fmt::Debug for BloomFilter<H> where H: BuildHasher, H::Hasher: Clone{
 
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "BloomFilter: size: {:?}, hash_count: {:?}, bits_full: {:?}, fill ratio: {:?}",
-               self.size, self.hash_count, self.bits_full, self.bits_full as f32/self.size as f32)
+        write!(f, "BloomFilter: size: {:?}, hash_count: {:?}, fill ratio: {:?}",
+               self.size, self.hash_count, self.get_bits_set() as f32/self.size as f32)
     }
 }
 
@@ -99,7 +101,6 @@ impl<H> BloomFilter<H> where H: BuildHasher, H::Hasher: Clone {
             size: size,
             hash_count: hash_count,
             bloom: BitVec::from_elem(size, false),
-            bits_full: 0,
             hashers: [hash_builder.build_hasher(), hash_builder.build_hasher()]
         }
     }
@@ -149,7 +150,6 @@ impl<H> BloomFilter<H> where H: BuildHasher, H::Hasher: Clone {
     /// Clears the bloom filter of all values.
     pub fn clear(&mut self) {
         self.bloom.clear();
-        self.bits_full = 0;
     }
 }
 
