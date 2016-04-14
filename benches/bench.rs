@@ -8,7 +8,7 @@ extern crate twox_hash;
 use test::{Bencher, black_box};
 use multibloom::BloomFilter;
 use rand::Rng;
-use twox_hash::RandomXxHashBuilder;
+use twox_hash::XxHash;
 
 #[bench]
 fn bench_add_1_sip(b: &mut Bencher) {
@@ -44,7 +44,7 @@ fn bench_add_1k_sip(b: &mut Bencher) {
 
 #[bench]
 fn bench_add_1_xx_hash(b: &mut Bencher) {
-    let mut bloom = BloomFilter::new_with_hasher(RandomXxHashBuilder::default(), 1000, 10);
+    let mut bloom = BloomFilter::<XxHash>::new_with_hasher(1000, 10);
     let bytes = rand::thread_rng().gen_iter::<u8>().take(1).collect::<Vec<u8>>();
     b.iter(|| {
         bloom.add(&bytes);
@@ -54,7 +54,7 @@ fn bench_add_1_xx_hash(b: &mut Bencher) {
 
 #[bench]
 fn bench_add_64_xx_hash(b: &mut Bencher) {
-    let mut bloom = BloomFilter::new_with_hasher(RandomXxHashBuilder::default(), 1000, 10);
+    let mut bloom = BloomFilter::<XxHash>::new_with_hasher(1000, 10);
     let bytes = rand::thread_rng().gen_iter::<u8>().take(64).collect::<Vec<u8>>();
 
     b.iter(|| {
@@ -65,7 +65,7 @@ fn bench_add_64_xx_hash(b: &mut Bencher) {
 
 #[bench]
 fn bench_add_1k_xx_hash(b: &mut Bencher) {
-    let mut bloom = BloomFilter::new_with_hasher(RandomXxHashBuilder::default(), 1000, 10);
+    let mut bloom = BloomFilter::<XxHash>::new_with_hasher(1000, 10);
     let bytes = rand::thread_rng().gen_iter::<u8>().take(1024).collect::<Vec<u8>>();
     b.iter(|| {
         bloom.add(&bytes);

@@ -33,11 +33,11 @@ use bit_vec::BitVec;
 use std::hash::{Hash, SipHasher, Hasher, BuildHasher};
 use std::fmt;
 
-pub struct BloomFilter<H: BuildHasher> {
+pub struct BloomFilter<H: Hasher> {
     size: u64,
     hash_count: u64,
     bloom: BitVec,
-    hashers: [H::Hasher; 2]
+    hashers: [H; 2]
 }
 
 #[derive(Clone)]
@@ -61,7 +61,7 @@ impl BuildHasher for SipBuilder{
     }
 }
 
-impl<H> fmt::Debug for BloomFilter<H> where H: BuildHasher, H::Hasher: Clone{
+impl<H> fmt::Debug for BloomFilter<H> where H: Hasher + Clone + Default{
 
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "BloomFilter: size: {:?}, hash_count: {:?}, fill ratio: {:?}",
@@ -69,7 +69,7 @@ impl<H> fmt::Debug for BloomFilter<H> where H: BuildHasher, H::Hasher: Clone{
     }
 }
 
-impl BloomFilter<SipBuilder> {
+impl BloomFilter<SipHasher> {
 
     /// Constructs a new `BloomFilter`
     ///
@@ -78,30 +78,30 @@ impl BloomFilter<SipBuilder> {
     ///
     /// `size`: The size of the bit vector being stored. (m)
     /// `hash_count`: The number of hash functions to use. (k)
-    pub fn new(size: u64, hash_count: u64) -> BloomFilter<SipBuilder> {
-        BloomFilter::new_with_hasher(SipBuilder::new(), size, hash_count)
+    pub fn new(size: u64, hash_count: u64) -> BloomFilter<SipHasher> {
+        BloomFilter::<SipHasher>::new_with_hasher(size, hash_count)
     }
 
     /// Constructs a new `BloomFilter` using desired error rate and number of items 
     ///
     /// `n`: The number of items that are going to be stored in the bloom filter.
     /// `p`: The allowable error rate of false positives
-    pub fn new_with_params(n: usize, p: f32) -> BloomFilter<SipBuilder> {
+    pub fn new_with_params(n: usize, p: f32) -> BloomFilter<SipHasher> {
         let m = ((-(n as f32 * (p.ln()))).ceil() / ((2.0f32).ln().powi(2))) as u64;
         let k = (((2.0f32).ln() * (m as f32/ n as f32)).round()) as u64;
         
-        BloomFilter::new_with_hasher(SipBuilder::new(), m, k)
+        BloomFilter::<SipHasher>::new_with_hasher(m, k)
     }
 }
 
-impl<H> BloomFilter<H> where H: BuildHasher, H::Hasher: Clone {
+impl<H> BloomFilter<H> where H: Hasher + Clone + Default {
 
-    pub fn new_with_hasher(hash_builder: H, size: u64, hash_count: u64) -> BloomFilter<H> {
+    pub fn new_with_hasher(size: u64, hash_count: u64) -> BloomFilter<H> {
         BloomFilter {
             size: size,
             hash_count: hash_count,
             bloom: BitVec::from_elem(size as usize, false),
-            hashers: [hash_builder.build_hasher(), hash_builder.build_hasher()]
+            hashers: [H::default(), H::default()]
         }
     }
 
