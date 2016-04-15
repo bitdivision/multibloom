@@ -20,7 +20,9 @@
  *
  ********************************************************************************/ 
 
-/// BloomFilter is a fast, tested and benchmarked bloom filter library.
+//! multibloom is a fast, tested and benchmarked bloom filter library.
+//!
+//! By default, the library uses SipHasher, but any hash function can be specified.
 
 extern crate bit_vec;
 
