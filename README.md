@@ -10,7 +10,7 @@ Currently a Work In Progress.
 
 Variants:
 
- - [x] Basic Bloom filter (Using SipHash)
+ - [x] Basic Bloom filter (Generic over hash function)
  - [ ] Scaleable Bloom filter ([reference](http://gsd.di.uminho.pt/members/cbm/ps/dbloom.pdf))
  - [ ] Partitioned Bloom filter ([reference](http://gsd.di.uminho.pt/members/cbm/ps/dbloom.pdf))
  - [ ] Counting Bloom filter

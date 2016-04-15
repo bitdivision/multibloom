@@ -45,36 +45,50 @@ impl<H> fmt::Debug for BloomFilter<H> where H: Hasher + Clone + Default{
 
 impl BloomFilter<SipHasher> {
 
-    /// Constructs a new `BloomFilter`
-    ///
-    /// Takes `size` and `hash_count`. These correspond to m and k in standard Bloom Filter
-    /// Descriptions.
+    /// Default `BloomFilter` constructor using SipHasher
     ///
     /// `size`: The size of the bit vector being stored. (m)
+    ///
     /// `hash_count`: The number of hash functions to use. (k)
     pub fn new(size: u64, hash_count: u64) -> BloomFilter<SipHasher> {
         BloomFilter::<SipHasher>::new_with_hasher(size, hash_count)
     }
 
-    /// Constructs a new `BloomFilter` using desired error rate and number of items 
-    ///
+    /// Default `BloomFilter` constructor for SipHasher using desired error rate and number of items 
+    /// 
     /// `n`: The number of items that are going to be stored in the bloom filter.
+    ///
     /// `p`: The allowable error rate of false positives
-    pub fn new_with_params(n: usize, p: f32) -> BloomFilter<SipHasher> {
-        let m = ((-(n as f32 * (p.ln()))).ceil() / ((2.0f32).ln().powi(2))) as u64;
-        let k = (((2.0f32).ln() * (m as f32/ n as f32)).round()) as u64;
-        
-        BloomFilter::<SipHasher>::new_with_hasher(m, k)
+    pub fn new_with_params(n: u64, p: f32) -> BloomFilter<SipHasher> {
+        BloomFilter::<SipHasher>::new_with_params_with_hasher(n, p)
     }
 }
 
 impl<H> BloomFilter<H> where H: Hasher + Clone + Default {
-
+    
+    /// Constructs a bloom filter, generic over hash function
     pub fn new_with_hasher(size: u64, hash_count: u64) -> BloomFilter<H> {
         BloomFilter {
             size: size,
             hash_count: hash_count,
             bloom: BitVec::from_elem(size as usize, false),
+            hashers: [H::default(), H::default()]
+        }
+    }
+    
+    /// Constructs a new Generic `BloomFilter` using desired error rate and number of items 
+    ///
+    /// `n`: The number of items that are going to be stored in the bloom filter.
+    ///
+    /// `p`: The allowable error rate of false positives
+    pub fn new_with_params_with_hasher(n: u64, p: f32) -> BloomFilter<H> {
+        let m = ((-(n as f32 * (p.ln()))).ceil() / ((2.0f32).ln().powi(2))) as u64;
+        let k = (((2.0f32).ln() * (m as f32/ n as f32)).round()) as u64;
+        
+        BloomFilter {
+            size: m,
+            hash_count: k,
+            bloom: BitVec::from_elem(m as usize, false),
             hashers: [H::default(), H::default()]
         }
     }
