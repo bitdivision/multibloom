@@ -4,11 +4,6 @@
  * something goes very very wrong. Probably better to error though since this is a 
  * library.
  *
- * Should this be generic over Hasher rather than BuildHasher? BuildHasher keeps it
- * consistent with HashMap but it seems the only reason to have BuildHasher is to 
- * allow random initialization of seed values? All BuildHasher implementations should
- * have a Hasher available.
- *
  * Derive Clone? This seems to throw up an error in rustc.
  *
  * Write some tests
@@ -30,7 +25,7 @@
 extern crate bit_vec;
 
 use bit_vec::BitVec;
-use std::hash::{Hash, SipHasher, Hasher, BuildHasher};
+use std::hash::{Hash, SipHasher, Hasher};
 use std::fmt;
 
 pub struct BloomFilter<H: Hasher> {
@@ -38,27 +33,6 @@ pub struct BloomFilter<H: Hasher> {
     hash_count: u64,
     bloom: BitVec,
     hashers: [H; 2]
-}
-
-#[derive(Clone)]
-pub struct SipBuilder {
-    k0: u64,
-    k1: u64,
-}
-
-impl SipBuilder {
-    pub fn new() -> SipBuilder{
-        SipBuilder { k0: 0, k1: 0 }
-    }
-}
-
-impl BuildHasher for SipBuilder{
-    type Hasher = SipHasher;
-
-    #[inline]
-    fn build_hasher(&self) -> SipHasher {
-        SipHasher::new_with_keys(self.k0, self.k1)
-    }
 }
 
 impl<H> fmt::Debug for BloomFilter<H> where H: Hasher + Clone + Default{
