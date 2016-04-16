@@ -12,8 +12,7 @@ Variants:
 
  - [x] Basic Bloom filter (Generic over hash function)
  - [ ] Scaleable Bloom filter ([reference](http://gsd.di.uminho.pt/members/cbm/ps/dbloom.pdf))
- - [ ] Partitioned Bloom filter ([reference](http://gsd.di.uminho.pt/members/cbm/ps/dbloom.pdf))
- - [ ] Counting Bloom filter
+ - [ ] Counting Bloom filter based on dlCBF ([reference](http://www.eecs.harvard.edu/~michaelm/postscripts/aller2006.pdf))
 
 ## License
 
